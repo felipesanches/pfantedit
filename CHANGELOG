@@ -1,0 +1,25 @@
+Commits
+Author 	Date 	Commit 	Message
+felipe.sanches 	Aug 12, 2012 	22 	colour switch areas depending on its type
+felipe.sanches 	Aug 12, 2012 	21 	load addresses of switch regions from the XML file
+felipe.sanches 	Aug 11, 2012 	20 	render sensor areas for PartyLand
+felipe.sanches 	Aug 11, 2012 	19 	Update version string
+felipe.sanches 	Aug 11, 2012 	18 	remove pf-patch and pf-extract in 'make clean' rule
+felipe.sanches 	Aug 11, 2012 	17 	Makefile: make clean rule
+felipe.sanches 	Aug 11, 2012 	16 	adding needed headers in order to cleanup some warning messages
+felipe.sanches 	Aug 11, 2012 	15 	updating headers to include copyright and contact information
+felipe.sanches 	Aug 11, 2012 	14 	fixing Makefile
+felipe.sanches 	Aug 11, 2012 	13 	refactor new_filename_change_extension function
+felipe.sanches 	Aug 11, 2012 	12 	adding needed headers to cleanup some warning messages
+felipe.sanches 	Mar 16, 2009 	11 	loading bgimage from a file using gdk pixbuf and saving it (and its palette) to
+felipe.sanches 	Mar 15, 2009 	10 	minor refactoring
+felipe.sanches 	Mar 15, 2009 	9 	modified compression algorithm: a pair must be compressed
+felipe.sanches 	Mar 15, 2009 	8 	added some debugging code to compare original encoded data with encoded data ge
+felipe.sanches 	Mar 15, 2009 	7 	improving user interface in python version. tryed to use gdkpixbuf in C version
+felipe.sanches 	Mar 14, 2009 	6 	cleaning come warnings
+felipe.sanches 	Sep 17, 2007 	5 	Adding license text.
+felipe.sanches 	Sep 17, 2007 	4 	removing example code samples
+felipe.sanches 	Sep 17, 2007 	3 	these are the first draft of the python version of pfantedit.
+felipe.sanches 	Sep 17, 2007 	2 	initial commit
+                Sep 17, 2007 	1 	Initial directory structure.
+
