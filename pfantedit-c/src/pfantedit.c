@@ -13,16 +13,23 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *----------------------------------------------------------------------
+ *
+ * (c) 2007, 2012 Felipe Corrêa da Silva Sanches <juca@members.fsf.org>
+ *
+ *----------------------------------------------------------------------
  */
 
 #include <gtk/gtk.h>
 #include "prg.h"
+#include "malloc.h"
+#include "stdlib.h"
+#include <gdk-pixbuf/gdk-pixbuf.h>
 
-#define VERSION_STRING "Pinball Fantasies Table Editor v.0.2.4"
+#define VERSION_STRING "Pinball Fantasies Table Editor 2012.Aug.11"
 GtkWidget *window= NULL;
 GtkWidget *da = NULL;
 /* Pixmap for scribble area, to store current scribbles */
-GdkPixmap *pixmap = NULL;
+extern GdkPixmap *pixmap;
 
 GtkWidget* mask_spinner[4];
 GtkWidget* bgi_spinner[4];

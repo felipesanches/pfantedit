@@ -13,9 +13,14 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *----------------------------------------------------------------------
+ *
+ * (c) 2007, 2012 Felipe Corrêa da Silva Sanches <juca@members.fsf.org>
+ *
+ *----------------------------------------------------------------------
  */
 
 #include <gtk/gtk.h>
+#include <gdk-pixbuf/gdk-pixbuf.h>
 #include "prg.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -99,7 +104,26 @@ row_pointers = (char **) malloc(height*sizeof(char *));
   fclose(image);
 }
 
+GdkPixbuf* pixmap = NULL;
+
 void read_png(char* buf, char* filename, struct color* pal){
+	GError* error = NULL;
+	GdkPixbuf* pb = gdk_pixbuf_new_from_file(filename, &error);
+	pixmap = pb;
+	return;
+	char* pixels = (char*) gdk_pixbuf_get_pixels(pb);
+
+	int w = gdk_pixbuf_get_width(pb);
+	int h = gdk_pixbuf_get_height(pb);
+
+	int i;
+	for (i=0;i<w*h;i++)
+		buf[i] = pixels[i];
+
+	printf("read_png\n\n%d %d OK\n", w, h);
+}
+
+void read_png0(char* buf, char* filename, struct color* pal){
     unsigned char header[8];
     int width=320,height=576;
     int i,j;
@@ -176,10 +200,16 @@ void read_png(char* buf, char* filename, struct color* pal){
 	png_get_PLTE(png_ptr, info_ptr, &png_palette, &num_palette);
 
 
-	for (i=0;i<256;i++){
+	for (i=0;i<num_palette;i++){
 		pal[i].red=(unsigned char)png_palette[i].red;
 		pal[i].green=(unsigned char)png_palette[i].green;
 		pal[i].blue=(unsigned char)png_palette[i].blue;
+	}
+
+	for (i=num_palette; i<256; i++){
+		pal[i].red = 0;
+		pal[i].green = 0;
+		pal[i].blue = 0;
 	}
 
   fclose(fp);

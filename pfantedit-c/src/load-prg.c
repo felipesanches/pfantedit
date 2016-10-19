@@ -13,15 +13,18 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *----------------------------------------------------------------------
-
- *-------------------------- load-prg.c -------------------------------------
+ *
+ * (c) 2007, 2012 Felipe Corrêa da Silva Sanches <juca@members.fsf.org>
+ *
+ *-------------------------- load-prg.c --------------------------------
  * The functions in this file implement decoding algorithms for the .PRG 
- * file format. It includes, for exemple, code to extract the background image
- * of a pinball table.
+ * file format. It includes, for instance, routines for extracting the
+ * background image of a pinball table.
  *----------------------------------------------------------------------
  */
 
 #include <gtk/gtk.h>
+#include <stdlib.h>
 #include "prg.h"
 #define IMAGE_XMAX 320
 
@@ -64,13 +67,13 @@ void decode_image(FILE *fp, unsigned long int file_offset, unsigned char* image,
 	int xplot=0, yplot=0, i;
 	unsigned char count,color;
 
-        fseek(fp,file_offset,SEEK_SET);
-	printf("image: %x-",ftell(fp));
+	fseek(fp,file_offset,SEEK_SET);
+	printf("image: %x-",(unsigned int) ftell(fp));
 	
-        while(yplot < ysize){
+	while(yplot < ysize){
 		count = getc(fp);
 		if (count <= 0x80){
-                        count++;
+            count++;
 			while(count--){
 				image[xsize*yplot + xplot++] = getc(fp);
 				if (xplot >= xsize){
@@ -88,8 +91,8 @@ void decode_image(FILE *fp, unsigned long int file_offset, unsigned char* image,
 				}
 			}
 		}
-        }
-	printf("%x\n",ftell(fp)-1);
+	}
+	printf("%x\n",(unsigned int) (ftell(fp)-1));
 }
 
 
@@ -109,7 +112,7 @@ void decode_mask(FILE *fp, char* mask, int xsize, int ysize, unsigned int addr){
 	unsigned char byte;
 	
 	fseek(fp,addr,SEEK_SET);
-	printf("%x-",ftell(fp));
+	printf("%x-",(unsigned int) ftell(fp));
 	while(yplot < ysize){
 		byte = getc(fp);
 		for(j=128;j>0;j/=2){
@@ -123,27 +126,26 @@ void decode_mask(FILE *fp, char* mask, int xsize, int ysize, unsigned int addr){
 	
 }
 
-void decode_masks(FILE *fp, struct prg_contents *table){	
+void decode_masks(FILE *fp, struct prg_contents *table){
 	int i;
-	
-        for(i=0;i<8;i++){
+	for(i=0;i<8;i++){
 		printf("mask%d: ",i);
 		decode_mask(fp, table->mask[i], 320, 576, table->mask_addr[i]);
-		printf("%x\n",ftell(fp)-1);
+		printf("%x\n",(unsigned int) (ftell(fp)-1));
 	}
 	printf("flipper: ");
 	decode_mask(fp, table->flipper, 64, 576, table->flipper_addr);
-	printf("%x\n",ftell(fp)-1);
+	printf("%x\n",(unsigned int) (ftell(fp)-1));
 }
 
 void load_palette(FILE *fp, struct prg_contents *table){
 	int i;
 	fseek(fp, table->palette_addr, SEEK_SET);
-	printf("Palette: %x-", ftell(fp));
+	printf("Palette: %x-", (unsigned int) ftell(fp));
 	for (i=0;i<256;i++){
 		table->palette[i].red = getc(fp);		
 		table->palette[i].green = getc(fp);
 		table->palette[i].blue = getc(fp);
 	}
-	printf("%x\n", ftell(fp)-1);
+	printf("%x\n", (unsigned int) (ftell(fp)-1));
 }

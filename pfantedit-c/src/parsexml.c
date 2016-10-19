@@ -13,6 +13,10 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *----------------------------------------------------------------------
+ *
+ * (c) 2007, 2012 Felipe Corrêa da Silva Sanches <juca@members.fsf.org>
+ *
+ *----------------------------------------------------------------------
  */
 
 #include <gtk/gtk.h>
@@ -25,7 +29,7 @@
 
 int hex2int(char * str){
 	int rv=0;
-	if (str[0] == (char) "0" && str[1] == (char) "x")
+	if (str[0] == '0' && str[1] == 'x')
 		str+=2;
 	while(*str){
 		rv*=16;

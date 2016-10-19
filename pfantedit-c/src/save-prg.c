@@ -13,16 +13,19 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  *----------------------------------------------------------------------
-
+ *
+ * (c) 2007, 2012 Felipe Corrêa da Silva Sanches <juca@members.fsf.org>
+ *
  *------------------------ save-prg.c ------------------------------
  * The functions in this file implement encoding algorithms
- * for the .PRG file format. It includes, for exemple, code to save
- * save the background image of a pinball table or code to patch a 
+ * for the .PRG file format. It includes, for instance, code to save
+ * the background image of a pinball table or code to patch a 
  * .PRG file with an image you provide.
  *------------------------------------------------------------------
  */
 
 #include <gtk/gtk.h>
+#include <stdlib.h>
 #include "prg.h"
 
 //------------Prototypes-------------
@@ -42,7 +45,7 @@ void encode_masks(FILE *fp, struct prg_contents *table){
 		xplot=1;
 		yplot=1;
 		fseek(fp,table->mask_addr[i],SEEK_SET); 
-		printf("mask%d: %x-",i, ftell(fp));		
+		printf("mask%d: %x-",i, (unsigned int) ftell(fp));		
         	while(yplot < 576){
 			byte=0;
  			for(j=128;j>0;j/=2){
@@ -54,20 +57,20 @@ void encode_masks(FILE *fp, struct prg_contents *table){
 			}
 			putc(byte,fp);
 		}
-		printf("%x\n",ftell(fp)-1);		
+		printf("%x\n",(unsigned int) (ftell(fp)-1));
 	}
 }
 
 void write_palette(FILE *fp, struct prg_contents *table){
 	int i;
 	fseek(fp, table->palette_addr, SEEK_SET);
-	printf("Palette: %x-", ftell(fp));
+	printf("Palette: %x-", (unsigned int) ftell(fp));
 	for (i=0;i<256;i++){
 		putc (table->palette[i].red, fp);		
 		putc (table->palette[i].green, fp);
 		putc (table->palette[i].blue, fp);
 	}
-	printf("%x\n", ftell(fp)-1);
+	printf("%x\n", (unsigned int) (ftell(fp)-1));
 }
 
 
@@ -136,7 +139,7 @@ void encode_image(FILE *fp, unsigned char* image, unsigned int image_index, unsi
 	unsigned int patch_index=image_index, base_index=image_index;
 
 	fseek(fp, file_offset, SEEK_SET);
-	printf("%x-", ftell(fp));
+	printf("%x-", (unsigned int) ftell(fp));
 
 	current = consecutive_pixels(image, &image_index, xsize, ysize, base_index); //1st: 35 (F3)
 	next = consecutive_pixels(image,  &image_index, xsize, ysize, base_index); //1st: 1 (03)
@@ -235,7 +238,7 @@ void encode_bgimage(FILE *fp, struct prg_contents *table){
 	for (i=0;i<4;i++){
 		printf("bgimage%d: ",i+1);
 		encode_image(fp, table->bgimage, i*320*144, table->bgi_addr[i], 320, 144);
-		printf("%x\n", ftell(fp)-1);
+		printf("%x\n", (unsigned int) (ftell(fp)-1));
 	}
 }
 
@@ -246,8 +249,8 @@ void patch_prg(struct prg_contents *table){
 	//printf("%s", filename);
 	if ((fp = fopen(filename,"r+b"))<0){
 		g_print("Error while trying to open %s\n", filename);
-                exit(-1);
-        }
+        exit(-1);
+    }
 	free(filename);
 
 	encode_bgimage(fp, table);

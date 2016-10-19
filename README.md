@@ -1,1 +1,1 @@
-Copie os arquivos .xml para o mesmo diretório onde estão os arquivos .PRG do jogo Pinball Fantasies.
+The python code is experimental. The official PFantEdit release is still implemented in C. Feel free to improve eighther version.
