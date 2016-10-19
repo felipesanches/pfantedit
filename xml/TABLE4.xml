@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<pftable>
+  <bgimage>
+    <address>0x4C98A</address>
+    <address>0x5584C</address>
+    <address>0x5E992</address>
+    <address>0x67CFE</address>
+  </bgimage>
+
+  <palette>
+    <address>0x66E50</address>
+  </palette>
+
+  <masks>
+    <address>0x28F30</address>167728
+    <address>0x2EDB0</address>191920
+    <address>0x347B0</address>214960
+    <address>0x3FBB0</address>261040
+
+    <address>0x3A1B0</address>238000
+    <address>0x6E870</address>452720
+    <address>0x74270</address>475760
+    <address>0x79C70</address>498800
+  </masks>
+
+  <flipper>
+    <address>0x45640</address>
+  </flipper>
+
+</pftable>
