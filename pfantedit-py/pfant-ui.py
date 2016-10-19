@@ -129,7 +129,16 @@ class PfantUI(gtk.Window):
 		widget.window.draw_drawable(widget.get_style().fg_gc[gtk.STATE_NORMAL], self.pixmap, x, y, x, y, width, height)
 		return False
 
-	def __init__(self, parent=None):
+	def __init__(self,
+                     parent=None,
+                     prg_file="TABLE1.PRG",
+                     write_bgimage_png=None,
+                     test_reload=False):
+
+		self.prg_file = prg_file
+		self.write_bgimage_png = write_bgimage_png
+		self.test_reload = test_reload
+
 		gtk.Window.__init__(self)
 
 		self.set_title(_("Pinball Fantasies Editor"))
@@ -166,47 +175,56 @@ class PfantUI(gtk.Window):
 		print "self.window: ",self.window
 		self.pixmap = gtk.gdk.Pixmap(self.window, 320, 576)
 
-		self.load_resources("TABLE1.PRG")
+		self.load_resources(self.prg_file)
 
-#		self.load_from_file("../bgimage-teste.png")
-		self.load_from_file("../goonies.png")
+                if self.write_bgimage_png is not None:
+			self.load_from_file(self.write_bgimage_png)
+			image2 = []
+			self.pal = []
+			for j in range(4):
+				imagechunk = []
+				print "chunk ", j
+				for i in range(320*144):
+					pos = 4*(i+320*144*j)
+					color = ord(self.image[pos]),ord(self.image[pos+1]),ord(self.image[pos+2])
+					byte = None
+					for index,c in enumerate(self.pal):
+						if c==color:
+							byte = index
 
-		image2 = []
-		self.pal = []
-		for j in range(4):
-			imagechunk = []
-			print "chunk ", j
-			for i in range(320*144):
-				pos = 4*(i+320*144*j)
-				color = ord(self.image[pos]),ord(self.image[pos+1]),ord(self.image[pos+2])
-				byte = None
-				for index,c in enumerate(self.pal):
-					if c==color:
-						byte = index
+					if len(self.pal) >= 200:
+						byte = 0
 
-				if len(self.pal) >= 200:
-					byte = 0
+	#				print color, byte
+					if byte == None:
+						self.pal.append(color)
+						imagechunk.append(len(self.pal))
+					else:
+						imagechunk.append(byte)
 
-#				print color, byte
-				if byte == None:
-					self.pal.append(color)
-					imagechunk.append(len(self.pal))
-				else:
-					imagechunk.append(byte)
+				image2.append(imagechunk)
+	#			print "a bit of a chunk:", [imagechunk[ii] for ii in range(5000)]
 
-			image2.append(imagechunk)
-#			print "a bit of a chunk:", [imagechunk[ii] for ii in range(5000)]
+			self.image = image2
 
-		self.image = image2
+			if test_reload:
+				self.save_resources(self.prg_file)
+				self.load_resources(self.prg_file)
 
-
-		self.save_resources("TABLE1.PRG") #testing...
-		self.load_resources("TABLE1.PRG") #testing...
 		self.draw_bgimage()
 #		self.draw_mask() #testing...
-		self.draw_sensors() #testing...
+		self.draw_sensors()
 
 def main():
+    # TODO: read command line args for:
+    #
+    # prg_file           -  Which of the 4 tables you want to see/edit ? (TABLE[1-4].PRG)
+    # write_bgimage_png  -  Load a PNG file encode it and patch the original game file
+    # test_reload        -  Try to reload resources after a binary patch operation
+
+    prg_file = None
+    write_bgimage_png = None
+    test_reload = False
     PfantUI()
     gtk.main()
 
