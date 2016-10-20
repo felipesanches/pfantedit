@@ -104,6 +104,20 @@ class PinballTable():
 
 class PfantUI(gtk.Window):
 
+  def __init__(self,
+               parent=None,
+               prg_file="TABLE1.PRG",
+               write_bgimage_png=None,
+               test_reload=False):
+
+    self.current_table = PinballTable(prg_file)
+    self.write_bgimage_png = write_bgimage_png
+    self.test_reload = test_reload
+
+    gtk.Window.__init__(self)
+    self.setup_ui()
+    self.setup_pinball_table()
+
   def draw_bgimage(self):
     """
     Draws the pinball table background image on the pixmap.
@@ -199,17 +213,7 @@ class PfantUI(gtk.Window):
                                 width, height)
     return False
 
-  def __init__(self,
-               parent=None,
-               prg_file="TABLE1.PRG",
-               write_bgimage_png=None,
-               test_reload=False):
-
-    self.current_table = PinballTable(prg_file)
-    self.write_bgimage_png = write_bgimage_png
-    self.test_reload = test_reload
-
-    gtk.Window.__init__(self)
+  def setup_ui(self):
     self.set_title(_("Pinball Fantasies Editor"))
     self.set_border_width(0)
 
@@ -244,47 +248,49 @@ class PfantUI(gtk.Window):
     print "self.window: ",self.window
     self.pixmap = gtk.gdk.Pixmap(self.window, 320, 576)
 
+  def setup_pinball_table(self):
     self.current_table.load_resources()
 
     if self.write_bgimage_png is not None:
-      self.current_table.load_from_file(self.write_bgimage_png)
-      image2 = []
-      self.pal = []
-      for j in range(4):
-        imagechunk = []
-        print "chunk ", j
-        for i in range(320*144):
-          pos = 4*(i+320*144*j)
-          color = (ord(self.current_table.image[pos]),
-                   ord(self.current_table.image[pos+1]),
-                   ord(self.current_table.image[pos+2]))
-          byte = None
-          for index,c in enumerate(self.pal):
-            if c==color:
-              byte = index
-
-          if len(self.pal) >= 200:
-            byte = 0
-
-#        print color, byte
-          if byte == None:
-            self.pal.append(color)
-            imagechunk.append(len(self.pal))
-          else:
-            imagechunk.append(byte)
-
-        image2.append(imagechunk)
-#        print "a bit of a chunk:", [imagechunk[ii] for ii in range(5000)]
-
-      self.image = image2
+      png_load(self.write_bgimage_png)
 
       if self.test_reload:
         self.current_table.save_resources()
         self.current_table.load_resources()
 
     self.draw_bgimage()
-#    self.draw_mask() #testing...
+    #self.draw_mask()
     self.draw_sensors()
+
+
+  def png_load(self, filename):
+    self.current_table.load_from_file(filename)
+    self.image = []
+    self.pal = []
+    for j in range(4):
+      imagechunk = []
+      print "chunk ", j
+      for i in range(320*144):
+        pos = 4*(i+320*144*j)
+        color = (ord(self.current_table.image[pos]),
+                 ord(self.current_table.image[pos+1]),
+                 ord(self.current_table.image[pos+2]))
+        byte = None
+        for index,c in enumerate(self.pal):
+          if c==color:
+            byte = index
+
+        if len(self.pal) >= 200:
+          byte = 0
+
+        if byte == None:
+          self.pal.append(color)
+          imagechunk.append(len(self.pal))
+        else:
+          imagechunk.append(byte)
+
+      self.image.append(imagechunk)
+
 
 def main():
   # TODO: read command line args for:
