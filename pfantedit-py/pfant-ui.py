@@ -42,10 +42,14 @@ ui_info = \
   </menubar>
 </ui>'''
 
-class PfantUI(gtk.Window):
-  def load_resources(self, filename):
-    fp = open(filename, 'rb')
-    bgimage_addr= [0x53188,0x5A4E6,0x62834,0x6B99E]
+class PinballTable():
+
+  def __init__(self, prg_file="TABLE1.PRG"):
+    self.prg_file = prg_file
+
+  def load_resources(self):
+    fp = open(self.prg_file, 'rb')
+    bgimage_addr = [0x53188,0x5A4E6,0x62834,0x6B99E]
     self.image = []
     for i in range(4):
       self.image.append(loadprg.decodeimage(fp, bgimage_addr[i], 320, 144))
@@ -53,8 +57,8 @@ class PfantUI(gtk.Window):
 #    self.mask = loadprg.decode_mask(fp, 320,576, 0x300B0)
     self.mask = []
     for i in range(4):
-      self.mask.append( loadprg.decode_mask(fp, 320,144, 0x300B0+i*320*144/8))
-    self.sensors = loadprg.load_sensors(fp,  0x1aa3d, 48)
+      self.mask.append(loadprg.decode_mask(fp, 320, 144, 0x300B0 + i*320*144/8))
+    self.sensors = loadprg.load_sensors(fp,  0x1AA3D, 48)
     fp.close()
 
   def load_from_file(self, filename):
@@ -62,10 +66,10 @@ class PfantUI(gtk.Window):
     self.image = pb.get_pixels()
     print "numero de pixels:", len(self.image)
 
-  def save_resources(self, filename):
-    fd = os.open(filename, os.O_RDWR)
-    bgimage_addr= [0x53188,0x5A4E6,0x62834,0x6B99E]
-    bgimage_maxaddr= [366163, 399769, 437153, 465711]
+  def save_resources(self):
+    fd = os.open(self.prg_file, os.O_RDWR)
+    bgimage_addr = [0x53188, 0x5A4E6, 0x62834, 0x6B99E]
+    bgimage_maxaddr = [366163, 399769, 437153, 465711]
 
     for i in range(4):
       saveprg.save_image(fd, self.image[i], bgimage_addr[i], bgimage_maxaddr[i], 320, 144)
@@ -76,26 +80,63 @@ class PfantUI(gtk.Window):
     os.close(fd)
 
 
+class PfantUI(gtk.Window):
+
   def draw_bgimage(self):
     """
     Draws the pinball table background image on the pixmap.
     """
     for i in range(4):
-      self.pixmap.draw_indexed_image(gtk.gdk.GC(self.window), 0,144*i, 320,144, gtk.gdk.RGB_DITHER_NORMAL, self.image[i], 320, self.palette)
-    self.da.queue_draw_area(0,0,320,576)
+      self.pixmap.draw_indexed_image(gtk.gdk.GC(self.window),
+                                     0, 144*i,
+                                     320, 144,
+                                     gtk.gdk.RGB_DITHER_NORMAL,
+                                     self.current_table.image[i],
+                                     320,
+                                     self.current_table.palette)
+    self.da.queue_draw_area(0, 0, 320, 576)
 
   def draw_mask(self):
     """
     Draws a bitmap mask.
     """
-    self.pixmap.draw_indexed_image(gtk.gdk.GC(self.window), 0,0, 320,576, gtk.gdk.RGB_DITHER_NORMAL, self.mask, 320, [0xffffff, 0x00ff00])
-    self.da.queue_draw_area(0,0,320,576)
+    self.pixmap.draw_indexed_image(gtk.gdk.GC(self.window),
+                                   0, 0, 320, 576,
+                                   gtk.gdk.RGB_DITHER_NORMAL,
+                                   self.current_table.mask,
+                                   320,
+                                   [0xffffff, 0x00ff00])
+    self.da.queue_draw_area(0, 0, 320, 576)
 
   def draw_sensors(self):
     """
     Draws rectangles representing the sensors
     """
-    loc = [[211,252,235,276],[268,263,292,287],[185,283,209,307],[50,415,80,470],[219,415,249,470],[130,196,146,204],[145,274,170,330],[90,15,130,40],[200,15,240,40],[160,35,182,55],[47,122,67,146],[120,165,150,185],[3,245,22,270],[220,280,260,300],[280,300,320,345],[260,312,268,321],[25,435,35,445],[263,435,273,445],[5,455,15,465],[284,455,294,465],[305,455,320,512],[305,512,320,576],[125,5,160,50],[40,40,75,100],[132,58,148,63],[222,58,238,63],[162,64,178,69],[192,64,208,69],[40,80,75,120],[175,100,200,130],[260,130,280,150],[3,245,22,270],[10,40,30,70],[10,100,40,200],[300,140,320,160],[215,160,235,190],[50,165,85,185],[275,165,300,220],[60,185,100,220],[195,175,215,200],[300,210,320,240],[300,240,320,340],[20,240,50,400],[3,245,22,270],[300,360,320,400],[300,400,320,500],[260,450,277,470],[0,450,50,470]]
+    self.current_table.sensors = [\
+      [211, 252, 235, 276], [268, 263, 292, 287],
+      [185, 283, 209, 307], [ 50, 415,  80, 470],
+      [219, 415, 249, 470], [130, 196, 146, 204],
+      [145, 274, 170, 330], [ 90,  15, 130,  40],
+      [200,  15, 240,  40], [160,  35, 182,  55],
+      [ 47, 122,  67, 146], [120, 165, 150, 185],
+      [  3, 245,  22, 270], [220, 280, 260, 300],
+      [280, 300, 320, 345], [260, 312, 268, 321],
+      [ 25, 435,  35, 445], [263, 435, 273, 445],
+      [  5, 455,  15, 465], [284, 455, 294, 465],
+      [305, 455, 320, 512], [305, 512, 320, 576],
+      [125,   5, 160,  50], [ 40,  40,  75, 100],
+      [132,  58, 148,  63], [222,  58, 238,  63],
+      [162,  64, 178,  69], [192,  64, 208,  69],
+      [ 40,  80,  75, 120], [175, 100, 200, 130],
+      [260, 130, 280, 150], [  3, 245,  22, 270],
+      [ 10,  40,  30,  70], [ 10, 100,  40, 200],
+      [300, 140, 320, 160], [215, 160, 235, 190],
+      [ 50, 165,  85, 185], [275, 165, 300, 220],
+      [ 60, 185, 100, 220], [195, 175, 215, 200],
+      [300, 210, 320, 240], [300, 240, 320, 340],
+      [ 20, 240,  50, 400], [  3, 245,  22, 270],
+      [300, 360, 320, 400], [300, 400, 320, 500],
+      [260, 450, 277, 470], [  0, 450,  50, 470]]
 #    print "lenghts:" #testing...
 #    print len(loc)
 #    print len(self.sensors)
@@ -104,9 +145,12 @@ class PfantUI(gtk.Window):
 #    print "sensors:"
 #    print self.sensors
 
-    for i in loc: # for i in self.sensors !
-      self.pixmap.draw_rectangle(gtk.gdk.GC(self.window),False, i[0], i[1], i[2]-i[0], i[3]-i[1])
-      self.da.queue_draw_area(0,0,320,576)
+    for i in self.current_table.sensors:
+      self.pixmap.draw_rectangle(gtk.gdk.GC(self.window),
+                                 False,
+                                 i[0], i[1],
+                                 i[2]-i[0], i[3]-i[1])
+      self.da.queue_draw_area(0, 0, 320, 576)
 
   def configure_event (self, widget, event):
     """
@@ -126,7 +170,11 @@ class PfantUI(gtk.Window):
     if self.pixmap is None:
       self.configure_event(widget, event)
     x , y, width, height = event.area
-    widget.window.draw_drawable(widget.get_style().fg_gc[gtk.STATE_NORMAL], self.pixmap, x, y, x, y, width, height)
+    widget.window.draw_drawable(widget.get_style().fg_gc[gtk.STATE_NORMAL],
+                                self.pixmap,
+                                x, y,
+                                x, y,
+                                width, height)
     return False
 
   def __init__(self,
@@ -135,12 +183,11 @@ class PfantUI(gtk.Window):
                write_bgimage_png=None,
                test_reload=False):
 
-    self.prg_file = prg_file
+    self.current_table = PinballTable(prg_file)
     self.write_bgimage_png = write_bgimage_png
     self.test_reload = test_reload
 
     gtk.Window.__init__(self)
-
     self.set_title(_("Pinball Fantasies Editor"))
     self.set_border_width(0)
 
@@ -175,10 +222,10 @@ class PfantUI(gtk.Window):
     print "self.window: ",self.window
     self.pixmap = gtk.gdk.Pixmap(self.window, 320, 576)
 
-    self.load_resources(self.prg_file)
+    self.current_table.load_resources()
 
     if self.write_bgimage_png is not None:
-      self.load_from_file(self.write_bgimage_png)
+      self.current_table.load_from_file(self.write_bgimage_png)
       image2 = []
       self.pal = []
       for j in range(4):
@@ -186,7 +233,9 @@ class PfantUI(gtk.Window):
         print "chunk ", j
         for i in range(320*144):
           pos = 4*(i+320*144*j)
-          color = ord(self.image[pos]),ord(self.image[pos+1]),ord(self.image[pos+2])
+          color = (ord(self.current_table.image[pos]),
+                   ord(self.current_table.image[pos+1]),
+                   ord(self.current_table.image[pos+2]))
           byte = None
           for index,c in enumerate(self.pal):
             if c==color:
@@ -207,9 +256,9 @@ class PfantUI(gtk.Window):
 
       self.image = image2
 
-      if test_reload:
-        self.save_resources(self.prg_file)
-        self.load_resources(self.prg_file)
+      if self.test_reload:
+        self.current_table.save_resources()
+        self.current_table.load_resources()
 
     self.draw_bgimage()
 #    self.draw_mask() #testing...
@@ -222,9 +271,6 @@ def main():
   # write_bgimage_png  -  Load a PNG file encode it and patch the original game file
   # test_reload        -  Try to reload resources after a binary patch operation
 
-  prg_file = None
-  write_bgimage_png = None
-  test_reload = False
   PfantUI()
   gtk.main()
 
