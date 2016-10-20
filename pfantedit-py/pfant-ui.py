@@ -42,23 +42,43 @@ ui_info = \
   </menubar>
 </ui>'''
 
+GAME_PARAMETERS = {
+  "TABLE1.PRG": {
+    "bgimage_addr": [0x53188,
+                     0x5A4E6,
+                     0x62834,
+                     0x6B99E],
+    "bgimage_maxaddr": [366163,
+                        399769,
+                        437153,
+                        465711],
+    "palette_addr": 0x6ABE0,
+    "mask_addr": 0x300B0,
+    "sensors_addr": 0x1AA3D
+  }
+}
+
 class PinballTable():
 
   def __init__(self, prg_file="TABLE1.PRG"):
     self.prg_file = prg_file
+    if prg_file.upper() in GAME_PARAMETERS.keys():
+      self.params = GAME_PARAMETERS[prg_file]
+    else:
+      self.params = GAME_PARAMETERS["TABLE1.PRG"] #  <-- default params
 
   def load_resources(self):
     fp = open(self.prg_file, 'rb')
-    bgimage_addr = [0x53188,0x5A4E6,0x62834,0x6B99E]
+
     self.image = []
     for i in range(4):
-      self.image.append(loadprg.decodeimage(fp, bgimage_addr[i], 320, 144))
-    self.palette = loadprg.palette(fp, 0x6ABE0)
-#    self.mask = loadprg.decode_mask(fp, 320,576, 0x300B0)
+      self.image.append(loadprg.decodeimage(fp, self.params["bgimage_addr"][i], 320, 144))
+    self.palette = loadprg.palette(fp, self.params["palette_addr"])
+#    self.mask = loadprg.decode_mask(fp, 320,576, self.params["mask_addr"])
     self.mask = []
     for i in range(4):
-      self.mask.append(loadprg.decode_mask(fp, 320, 144, 0x300B0 + i*320*144/8))
-    self.sensors = loadprg.load_sensors(fp,  0x1AA3D, 48)
+      self.mask.append(loadprg.decode_mask(fp, 320, 144, self.params["mask_addr"] + i*320*144/8))
+    self.sensors = loadprg.load_sensors(fp, self.params["sensors_addr"], 48)
     fp.close()
 
   def load_from_file(self, filename):
@@ -68,15 +88,17 @@ class PinballTable():
 
   def save_resources(self):
     fd = os.open(self.prg_file, os.O_RDWR)
-    bgimage_addr = [0x53188, 0x5A4E6, 0x62834, 0x6B99E]
-    bgimage_maxaddr = [366163, 399769, 437153, 465711]
 
     for i in range(4):
-      saveprg.save_image(fd, self.image[i], bgimage_addr[i], bgimage_maxaddr[i], 320, 144)
+      saveprg.save_image(fd,
+                         self.image[i],
+                         self.params["bgimage_addr"][i],
+                         self.params["bgimage_maxaddr"][i],
+                         320, 144)
 
-    saveprg.palette(fd, 0x6ABE0, self.pal)
-    #self.mask = loadprg.decode_mask(fp, 320,576, 0x300B0)
-    #self.sensors = loadprg.load_sensors(fp,  0x1aa3d, 48)
+    saveprg.palette(fd, self.params["palette_addr"], self.pal)
+    #self.mask = loadprg.decode_mask(fp, 320, 576, self.params["mask_addr"])
+    #self.sensors = loadprg.load_sensors(fp,  self.params["sensors_addr"], 48)
     os.close(fd)
 
 
