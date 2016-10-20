@@ -44,26 +44,52 @@ ui_info = \
 
 GAME_PARAMETERS = {
   "TABLE1.PRG": {
-    "bgimage_addr": [0x53188,
-                     0x5A4E6,
-                     0x62834,
-                     0x6B99E],
-    "bgimage_maxaddr": [366163,
-                        399769,
-                        437153,
-                        465711],
+    "bgimage_addr": [0x53188, 0x5A4E6, 0x62834, 0x6B99E],
+    "bgimage_maxaddr": [366163, 399769, 437153, 465711],
     "palette_addr": 0x6ABE0,
-    "mask_addr": 0x300B0,
-    "sensors_addr": 0x1AA3D
-  }
+    "mask_addr": [0x300B0, 0x35F58, 0x3B930, 0x46D30,
+                  0x41330, 0x71B30, 0x77530, 0x7CF30],
+    "sensors_addr": 0x1AA3D,
+    "flipper_addr": None
+  },
+  "TABLE2.PRG": {
+    "bgimage_addr": [0x51438, 0x5914C, 0x60E10, 0x68808],
+    "bgimage_maxaddr": [0, 0, 0, 0],
+    "palette_addr": 0x67B30,
+    "mask_addr": [0x2D4F0, 0x33398, 0x38D70, 0x44170,
+                  0x3E770, 0x6D7C0, 0x731C0, 0x78B98],
+    "sensors_addr": None,
+    "flipper_addr": None
+  },
+  "TABLE3.PRG": {
+    "bgimage_addr": [0x4D708, 0x532C4, 0x5B5CE, 0x6428E],
+    "bgimage_maxaddr": [0, 0, 0, 0],
+    "palette_addr": 0x63500,
+    "mask_addr": [0x1F870, 0x256F0, 0x2B118, 0x364F0,
+                  0x30AF0, 0x6A3F0, 0x6FDF0, 0x757F0],
+    "sensors_addr": None,
+    "flipper_addr": None
+  },
+  "TABLE4.PRG": {
+    "bgimage_addr": [0x4C98A, 0x5584C, 0x5E992, 0x67CFE],
+    "bgimage_maxaddr": [0, 0, 0, 0],
+    "palette_addr": 0x66E50,
+    "mask_addr": [0x28F30, 0x2EDB0, 0x347B0, 0x3FBB0,
+                  0x3A1B0, 0x6E870, 0x74270, 0x79C70],
+    "sensors_addr": None,
+    "flipper_addr": 0x45640
+  },
 }
+
+
+
 
 class PinballTable():
 
   def __init__(self, prg_file="TABLE1.PRG"):
     self.prg_file = prg_file
     if prg_file.upper() in GAME_PARAMETERS.keys():
-      self.params = GAME_PARAMETERS[prg_file]
+      self.params = GAME_PARAMETERS[prg_file.upper()]
     else:
       self.params = GAME_PARAMETERS["TABLE1.PRG"] #  <-- default params
 
@@ -74,11 +100,15 @@ class PinballTable():
     for i in range(4):
       self.image.append(loadprg.decodeimage(fp, self.params["bgimage_addr"][i], 320, 144))
     self.palette = loadprg.palette(fp, self.params["palette_addr"])
-#    self.mask = loadprg.decode_mask(fp, 320,576, self.params["mask_addr"])
+#    self.mask = loadprg.decode_mask(fp, 320,576, self.params["mask_addr"][0])
     self.mask = []
+
+    # TODO: load all 8 masks instead of only the first one!
     for i in range(4):
-      self.mask.append(loadprg.decode_mask(fp, 320, 144, self.params["mask_addr"] + i*320*144/8))
-    self.sensors = loadprg.load_sensors(fp, self.params["sensors_addr"], 48)
+      self.mask.append(loadprg.decode_mask(fp, 320, 144, self.params["mask_addr"][0] + i*320*144/8))
+
+    if self.params["sensors_addr"] is not None:
+      self.sensors = loadprg.load_sensors(fp, self.params["sensors_addr"], 48)
     fp.close()
 
   def load_from_file(self, filename):
@@ -299,7 +329,7 @@ def main():
   # write_bgimage_png  -  Load a PNG file encode it and patch the original game file
   # test_reload        -  Try to reload resources after a binary patch operation
 
-  PfantUI()
+  PfantUI(prg_file="table4.prg")
   gtk.main()
 
 if __name__ == '__main__':
