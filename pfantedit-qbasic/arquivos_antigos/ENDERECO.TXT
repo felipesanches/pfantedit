@@ -1,0 +1,21 @@
+PARTYland:
+A=531d5h
+B=5A4E7h
+C=62835h
+D=6B99Fh
+
+NOP (90h) em 523Ch e em 524Fh desativa inicializacao da paleta de cores.
+(EEh = out dx,al)
+A paleta de cores deveria estar em 4F54h...
+
+strings:
+3bf8h "Can't init sound device!$"
+3C39h "Error loading module!$"
+3C77h "Can't find $"   <-- logo ap¢s esta string entra o nome do
+                                arquivo nÆo encontrado.
+3CB8h "Out of memory! The selected sounddriver requires more memory!$"
+.
+.
+.
+
+
